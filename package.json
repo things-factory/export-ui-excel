@@ -1,6 +1,6 @@
 {
   "name": "@things-factory/export-ui-excel",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "main": "dist-server/index.js",
   "browser": "client/index.js",
   "things-factory": true,
@@ -26,7 +26,8 @@
     "@things-factory/export-base": "*",
     "@things-factory/export-ui": "*",
     "@things-factory/layout-base": "*",
-    "@things-factory/shell": "*"
+    "@things-factory/shell": "*",
+    "xlsx": "*"
   },
   "devDependencies": {
     "@things-factory/auth-ui-jwt": "*",
