@@ -11,9 +11,10 @@ function jsonToXls(params) {
 }
 
 function jsonToExcel(exts, params) {
-  const sheetName = params.sheetName
-  const header = params.header
+  if (params.data === 0) return
+  const sheetName = params.name
   const data = params.data
+  const header = Object.keys(params.data[0])
 
   const wb = XLSX.utils.book_new()
   const ws = XLSX.utils.json_to_sheet(data, { header })
