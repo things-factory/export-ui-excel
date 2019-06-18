@@ -3,30 +3,22 @@ import { UPDATE_EXTENSION } from '@things-factory/export-base'
 
 import * as XLSX from 'xlsx'
 
-function jsonToXslx(params) {
-  jsonToExcel('xlsx', params)
-}
-
-function jsonToXls(params) {
-  jsonToExcel('xls', params)
-}
-
-function jsonToExcel(exts, params) {
-  if (params.data === 0) {
+function jsonToExcel({ extension, name, data }) {
+  if (data === 0) {
     return
   }
 
-  const sheetName = params.name
-  const data = typeof params.data == 'function' ? params.data.call() : params.data
+  const sheetName = name
+  const records = typeof data == 'function' ? data.call() : data
 
-  const header = Object.keys(params.data[0])
+  const header = Object.keys(records[0])
 
   const wb = XLSX.utils.book_new()
   const ws = XLSX.utils.json_to_sheet(data, { header })
 
   XLSX.utils.book_append_sheet(wb, ws, sheetName)
-  XLSX.writeFile(wb, `${sheetName}.${exts}`, {
-    bookType: exts
+  XLSX.writeFile(wb, `${sheetName}.${extension}`, {
+    bookType: extension
   })
 }
 
@@ -35,10 +27,10 @@ export default function bootstrap() {
     type: UPDATE_EXTENSION,
     extensions: {
       xlsx: {
-        export: jsonToXslx
+        export: jsonToExcel
       },
       xls: {
-        export: jsonToXls
+        export: jsonToExcel
       }
     }
   })
