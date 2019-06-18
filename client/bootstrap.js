@@ -14,7 +14,7 @@ function jsonToExcel({ extension, name, data }) {
   const header = Object.keys(records[0])
 
   const wb = XLSX.utils.book_new()
-  const ws = XLSX.utils.json_to_sheet(data, { header })
+  const ws = XLSX.utils.json_to_sheet(records, { header })
 
   XLSX.utils.book_append_sheet(wb, ws, sheetName)
   XLSX.writeFile(wb, `${sheetName}.${extension}`, {
