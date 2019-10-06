@@ -1,8 +1,0 @@
-dist-client/
-dist-server/
-node_modules/
-yarn*.*
-package-lock.json
-db.sqlite
-.DS_Store
-.vscode
