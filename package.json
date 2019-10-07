@@ -1,6 +1,6 @@
 {
   "name": "@things-factory/export-ui-excel",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "main": "dist-server/index.js",
   "browser": "client/index.js",
   "things-factory": true,
@@ -27,6 +27,8 @@
     "@things-factory/export-ui": "*",
     "@things-factory/layout-base": "*",
     "@things-factory/shell": "*",
+    "exceljs": "^3.0.0",
+    "file-saver": "^2.0.2",
     "xlsx": "*"
   },
   "devDependencies": {
