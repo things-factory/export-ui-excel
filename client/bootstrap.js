@@ -59,6 +59,9 @@ async function objDataToExcel({ extension, name, data }) {
     })
   ]
   ws.columns = header
+  ws._rows[0]._cells.map((cell, index) => {
+    cell.name = header[index].key
+  })
   ws.addRows(records.data)
   ws.addRow({ id: records.data.length + 1 })
 
@@ -72,16 +75,46 @@ async function objDataToExcel({ extension, name, data }) {
   // Cell Type: [ list, whole, decimal, textLength, date ]
   records.header
     .filter(column => column.type === 'array' && column.arrData instanceof Array)
-    .map(column => {
-      var arrName = column.arrData.map(data => {
-        return data.name
+    .map(async column => {
+      let dataWs = wb.addWorksheet(ws.getColumn(column.key)._number.toString())
+      let dataWsKeys = Object.keys(column.arrData[1]).map(item => {
+        return { name: item }
       })
+      let dataWsValues = column.arrData.map(item => {
+        return Object.values(item)
+      })
+      dataWs.addTable({
+        name: column.key,
+        ref: 'A1',
+        headerRow: true,
+        columns: dataWsKeys,
+        rows: dataWsValues
+      })
+
+      dataWs.state = 'veryHidden'
+      let dataWsTable = dataWs.getTable(column.key).table
+      let charColumnCode = String.fromCharCode(
+        97 + dataWsTable.columns.findIndex(ind => ind.name === 'name')
+      ).toUpperCase()
+
+      await dataWs.protect(
+        Math.random()
+          .toString(36)
+          .substring(2),
+        {
+          selectLockedCells: false,
+          selectUnlockedCells: false
+        }
+      )
+
       ws.getColumn(column.key).eachCell(function(cell, rowNumber) {
         if (rowNumber !== 1)
           cell.dataValidation = {
             type: 'list',
             allowBlank: false,
-            formulae: ['"' + arrName.join(',') + '"']
+            formulae: [
+              dataWs.name + '!' + charColumnCode + '2:' + charColumnCode + (2 + dataWsTable.rows.length).toString()
+            ]
           }
       })
     })
@@ -124,7 +157,7 @@ async function objDataToExcel({ extension, name, data }) {
       })
     })
 
-  // //Save as file using "file-saver". Requirement: import { saveAs } from 'file-saver'
+  //Save as file using "file-saver". Requirement: import { saveAs } from 'file-saver'
   await wb.xlsx.writeBuffer(EXCEL_FORMATS).then(buffer => {
     saveAs(
       new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' }),
