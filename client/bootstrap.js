@@ -106,7 +106,7 @@ async function objDataToExcel({ extension, name, data }) {
           cell.dataValidation = {
             type: 'list',
             allowBlank: true,
-            formulae: [dataWs.name + '!' + charColumnCode + '2:' + charColumnCode + (2 + dataWs.rowCount).toString()]
+            formulae: [dataWs.name + '!$' + charColumnCode + '$2:$' + charColumnCode + '$' + dataWs.rowCount.toString()]
           }
       })
     })
