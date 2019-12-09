@@ -5,13 +5,13 @@ import * as XLSX from '!xlsx'
 import Excel from '!exceljs'
 import { saveAs } from 'file-saver'
 
-function jsonToExcel({ extension, name, data }) {
+async function jsonToExcel({ extension, name, data }) {
   if (data === 0) {
     return
   }
 
   const sheetName = name
-  const records = typeof data == 'function' ? data.call() : data
+  const records = typeof data == 'function' ? await data.call() : data
 
   const header = Object.keys(records[0])
 
@@ -38,7 +38,7 @@ async function objDataToExcel({ extension, name, data }) {
   //    header: [{headerName, fieldName, type, arrData}], data: [{fieldName: value}, sheetStyle:{}]
   // }
 
-  const records = typeof data == 'function' ? data.call() : data
+  const records = typeof data == 'function' ? await data.call() : data
   // ////Perform excel file manipulation. Requirement: import Excel from 'exceljs'
   const EXCEL_FORMATS = {
     DATE: { numFmt: 'dd.mmm.yyyy' },
