@@ -1,8 +1,8 @@
 import { store } from '@things-factory/shell'
 import { UPDATE_EXTENSION } from '@things-factory/export-base'
 
-import * as XLSX from 'xlsx'
-import Excel from 'exceljs'
+import * as XLSX from '!xlsx'
+import Excel from '!exceljs'
 import { saveAs } from 'file-saver'
 
 async function jsonToExcel({ extension, name, data }) {
