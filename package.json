@@ -26,7 +26,6 @@
     "@things-factory/export-base": "^2.0.0",
     "@things-factory/export-ui": "^2.0.0",
     "@things-factory/layout-base": "^2.0.0",
-    "@things-factory/shell": "^2.0.0",
     "exceljs": "^3.0.0",
     "file-saver": "^2.0.2",
     "xlsx": "*"
