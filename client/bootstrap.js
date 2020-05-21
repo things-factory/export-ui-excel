@@ -65,19 +65,17 @@ async function objDataToExcel({ extension, name, data }) {
       cell.name = header[index].key
     })
 
+    let printData = JSON.parse(JSON.stringify(records.data))
     if (!!records.groups && records.groups.length > 0) {
-      let arrProcessedData = JSON.parse(JSON.stringify(records.data))
-      ws.addRows(
-        multiGroupTree(
-          arrProcessedData,
-          records.groups.map((itm) => itm.column),
-          records.groups,
-          records.totals
-        )
+      printData = multiGroupTree(
+        printData,
+        records.groups.map((itm) => itm.column),
+        records.groups,
+        records.totals
       )
-    } else {
-      ws.addRows(records.data)
     }
+
+    ws.addRows(printData)
 
     ws.addRow({ id: '' })
     ws.getColumn('id').hidden = true
@@ -236,18 +234,18 @@ function multiGroupTree(array, groups, groupsRaw, totals) {
 
       let currentGroupSetting = groupsRaw.filter((x) => x.column === currentGroup)[0]
 
-      grouping[key].map((itm, index) => {
+      data.map((itm, index) => {
         if (index != 0) itm[currentGroup] = ''
         return itm
       })
 
       let newRow = []
       if (currentGroupSetting.title) {
-        let dataStructure = stripObject(grouping[key][0])
+        let dataStructure = stripObject(data[0])
         dataStructure[currentGroup] = currentGroupSetting.title
 
         totals.forEach((total) => {
-          dataStructure[total] = grouping[key].reduce((acc, obj) => {
+          dataStructure[total] = value.reduce((acc, obj) => {
             acc = acc + (parseFloat(obj[total]) || 0)
             return acc
           }, 0)
