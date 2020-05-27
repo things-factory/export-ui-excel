@@ -63,8 +63,29 @@ async function objDataToExcel({ extension, name, data }) {
     ws.columns = header
     ws._rows[0]._cells.map((cell, index) => {
       cell.name = header[index].key
+
+      // ////Set Header Cell Fill
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FF0C5394' },
+      }
+      // ////Set Header Cell Font style
+      cell.font = {
+        name: 'Arial',
+        color: { argb: 'FFFFFFFF' },
+        family: 1,
+        size: 12,
+        bold: true,
+      }
+      // ////Set Header Cell Alignment
+      cell.alignment = {
+        vertical: 'middle',
+        horizontal: 'center',
+      }
     })
 
+    let [alternateA, alternateB] = ['FFFFFF', 'F3F3F3']
     let printData = JSON.parse(JSON.stringify(records.data))
     if (!!records.groups && records.groups.length > 0) {
       printData = multiGroupTree(
@@ -73,9 +94,38 @@ async function objDataToExcel({ extension, name, data }) {
         records.groups,
         records.totals
       )
+      printData = printData.map((row) => {
+        ;[alternateA, alternateB] = [alternateB, alternateA]
+        return {
+          data: row,
+          style: {
+            row: {
+              // ////Set alternate Cell Fill
+              fill: {
+                type: 'pattern',
+                pattern: 'solid',
+                fgColor: { argb: alternateA },
+              },
+              border: {
+                bottom: { style: 'thin' },
+              },
+            },
+          },
+        }
+      })
     }
 
-    ws.addRows(printData)
+    // ////Set each cell's design
+    printData.forEach((row, index) => {
+      ws.addRow(row.data)
+
+      if (!!row.style) {
+        ws._rows[index + 1]._cells.forEach((cell) => {
+          let cellStyle = row.style[cell._column._key] || {}
+          cell.style = { ...cell.style, ...row.style.row, ...cellStyle }
+        })
+      }
+    })
 
     ws.addRow({ id: '' })
     ws.getColumn('id').hidden = true
@@ -162,7 +212,7 @@ async function objDataToExcel({ extension, name, data }) {
         })
       })
 
-    ////Save as file using "file-saver". Requirement: import { saveAs } from 'file-saver'
+    //Save as file using "file-saver". Requirement: import { saveAs } from 'file-saver'
     await wb.xlsx.writeBuffer(EXCEL_FORMATS).then((buffer) => {
       saveAs(
         new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' }),
@@ -197,66 +247,123 @@ function multiGroupTree(array, groups, groupsRaw, totals) {
   let grouping = _.groupBy(array, currentGroup)
 
   if (!restGroups.length) {
-    let data = []
+    let rows = []
     Object.keys(grouping).forEach((itm) => {
       let currentGroupSetting = groupsRaw.filter((x) => x.column === currentGroup)[0]
 
-      grouping[itm].map((itm, index) => {
+      let [alternateA, alternateB] = ['F3F3F3', 'FFFFFF']
+      grouping[itm] = grouping[itm].map((itm, index) => {
         if (index != 0) itm[currentGroup] = ''
-        return itm
+        ;[alternateA, alternateB] = [alternateB, alternateA]
+
+        return {
+          data: itm,
+          style: {
+            row: {
+              fill: {
+                type: 'pattern',
+                pattern: 'solid',
+                fgColor: { argb: alternateA },
+              },
+            },
+          },
+        }
       })
 
       let newRow = []
       if (currentGroupSetting.title) {
-        let dataStructure = stripObject(grouping[itm][0])
-        dataStructure[currentGroup] = currentGroupSetting.title
+        let sumData = stripObject(grouping[itm][0])
+        sumData.data[currentGroup] = currentGroupSetting.title
 
         totals.forEach((total) => {
-          dataStructure[total] = grouping[itm].reduce((acc, obj) => {
+          sumData.data[total] = grouping[itm].reduce((acc, obj) => {
             acc = acc + (parseFloat(obj[total]) || 0)
             return acc
           }, 0)
         })
 
-        newRow = [dataStructure]
+        sumData.style = getGroupRowStyle([currentGroup])
+        newRow = [sumData]
       }
 
-      data = [...grouping[itm], ...newRow, ...data]
+      rows = [...grouping[itm], ...newRow, ...rows]
     })
 
-    return data
+    return rows
   }
 
   let result = _.transform(
     grouping,
     (result, value, key) => {
-      let data = multiGroupTree(value, restGroups, groupsRaw, totals)
+      let rows = multiGroupTree(value, restGroups, groupsRaw, totals)
 
       let currentGroupSetting = groupsRaw.filter((x) => x.column === currentGroup)[0]
 
-      data.map((itm, index) => {
-        if (index != 0) itm[currentGroup] = ''
+      rows.map((itm, index) => {
+        if (index != 0) itm.data[currentGroup] = ''
         return itm
       })
 
       let newRow = []
       if (currentGroupSetting.title) {
-        let dataStructure = stripObject(data[0])
-        dataStructure[currentGroup] = currentGroupSetting.title
+        let sumData = stripObject(rows[0])
+        sumData.data[currentGroup] = currentGroupSetting.title
 
         totals.forEach((total) => {
-          dataStructure[total] = value.reduce((acc, obj) => {
+          sumData.data[total] = value.reduce((acc, obj) => {
             acc = acc + (parseFloat(obj[total]) || 0)
             return acc
           }, 0)
         })
 
-        newRow = [dataStructure]
+        sumData.style = getGroupRowStyle([currentGroup])
+        newRow = [sumData]
       }
 
-      data = [...data, ...newRow]
+      rows = [...rows, ...newRow]
 
-      data.map((row) => result.push(row))
+      if (groupsRaw.findIndex((x) => x.column == currentGroupSetting.column) === 0) {
+        rows.forEach((row, index) => {
+          row.style = {
+            ...row.style,
+            [currentGroupSetting.column]: {
+              fill: {
+                type: 'pattern',
+                pattern: 'solid',
+                fgColor: { argb: 'FFCFE2F3' },
+              },
+              font: {
+                bold: true,
+              },
+            },
+          }
+
+          if (index != rows.length - 1) {
+            row.style = {
+              ...row.style,
+              [currentGroupSetting.column]: {
+                ...row.style[currentGroupSetting.column],
+                border: {
+                  top: { style: '' },
+                  bottom: { style: '' },
+                },
+              },
+            }
+          }
+        })
+
+        rows[rows.length - 1].style = {
+          ...rows[rows.length - 1].style,
+          row: {
+            ...rows[rows.length - 1].style.row,
+            border: {
+              bottom: { style: 'thin' },
+            },
+          },
+        }
+      }
+
+      rows.map((row) => result.push(row))
     },
     []
   )
@@ -277,4 +384,28 @@ function stripObject(source) {
     }
   }
   return o
+}
+
+function getGroupRowStyle(groupColumnName) {
+  return {
+    [groupColumnName]: {
+      alignment: {
+        horizontal: 'center',
+      },
+    },
+    row: {
+      border: {
+        top: { style: 'thin' },
+        bottom: { style: 'thin' },
+      },
+      fill: {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFEEF7FF' },
+      },
+      font: {
+        bold: true,
+      },
+    },
+  }
 }
