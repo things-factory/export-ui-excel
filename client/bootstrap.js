@@ -94,6 +94,7 @@ async function objDataToExcel({ extension, name, data }) {
         records.groups,
         records.totals
       )
+    } else {
       printData = printData.map((row) => {
         ;[alternateA, alternateB] = [alternateB, alternateA]
         return {
