@@ -278,7 +278,7 @@ function multiGroupTree(array, groups, groupsRaw, totals) {
 
         totals.forEach((total) => {
           sumData.data[total] = grouping[itm].reduce((acc, obj) => {
-            acc = acc + (parseFloat(obj[total]) || 0)
+            acc = acc + (parseFloat(obj.data[total]) || 0)
             return acc
           }, 0)
         })
