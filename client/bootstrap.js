@@ -60,6 +60,12 @@ async function objDataToExcel({ extension, name, data }) {
         }
       }),
     ]
+
+    var headerObjStructure = records.header.reduce(function (obj, item) {
+      obj[item.key] = ''
+      return obj
+    }, {})
+
     ws.columns = header
     ws._rows[0]._cells.map((cell, index) => {
       cell.name = header[index].key
@@ -87,6 +93,11 @@ async function objDataToExcel({ extension, name, data }) {
 
     let [alternateA, alternateB] = ['FFFFFF', 'F3F3F3']
     let printData = JSON.parse(JSON.stringify(records.data))
+
+    printData = printData.map((data) => {
+      return { ...headerObjStructure, ...data }
+    })
+
     if (!!records.groups && records.groups.length > 0) {
       printData = multiGroupTree(
         printData,
@@ -334,6 +345,9 @@ function multiGroupTree(array, groups, groupsRaw, totals) {
                 fgColor: { argb: 'FFCFE2F3' },
               },
               font: {
+                name: 'Arial',
+                color: { argb: 'FF000000' },
+                family: 1,
                 bold: true,
               },
             },
@@ -405,6 +419,9 @@ function getGroupRowStyle(groupColumnName) {
         fgColor: { argb: 'FFEEF7FF' },
       },
       font: {
+        name: 'Arial',
+        color: { argb: 'FF000000' },
+        family: 1,
         bold: true,
       },
     },
