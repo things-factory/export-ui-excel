@@ -56,7 +56,7 @@ async function objDataToExcel({ extension, name, data }) {
         return {
           header: column.header || '',
           key: column.key || '',
-          width: column.width || undefined,
+          width: column.width ? column.width : column.header.length < 12 ? 12 : column.header.length
         }
       }),
     ]
@@ -266,7 +266,7 @@ function multiGroupTree(array, groups, groupsRaw, totals) {
       let [alternateA, alternateB] = ['F3F3F3', 'FFFFFF']
       grouping[itm] = grouping[itm].map((itm, index) => {
         if (index != 0) itm[currentGroup] = ''
-        ;[alternateA, alternateB] = [alternateB, alternateA]
+          ;[alternateA, alternateB] = [alternateB, alternateA]
 
         return {
           data: itm,
@@ -394,8 +394,8 @@ function stripObject(source) {
         source[key] === null
           ? null
           : t == 'object'
-          ? stripObject(source[key])
-          : { string: '', number: 0, boolean: false }[t]
+            ? stripObject(source[key])
+            : { string: '', number: 0, boolean: false }[t]
     }
   }
   return o
